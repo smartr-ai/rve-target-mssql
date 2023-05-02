@@ -395,3 +395,15 @@ class mssqlConnector(SQLConnector):
         """  # nosec
 
         self.connection.execute(ddl)
+
+    def swap_and_truncate(self, stream_name, prefix) -> None:
+        try:
+            trans = self.connection.begin()
+            self.connection.execute(f"sp_rename {stream_name}, {stream_name}_old;")
+            self.connection.execute(f"sp_rename {prefix}{stream_name}, {stream_name};")
+            self.connection.execute(f"DROP TABLE {stream_name}_old;")
+            trans.commit()
+        except Exception as e:
+            raise RuntimeError(
+                f"Swap and truncate did not work for stream `{stream_name}` with prefix `{prefix}`."
+            ) from e

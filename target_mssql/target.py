@@ -53,6 +53,12 @@ class Targetmssql(SQLTarget):
             "table_prefix", th.StringType, description="Prefix to add to table name"
         ),
         th.Property(
+            "swap_and_truncate",
+            th.BooleanType,
+            description="Use custom swap and truncate function at end of stream. Must use prefix!",
+            default=False,
+        ),
+        th.Property(
             "prefer_float_over_numeric",
             th.BooleanType,
             description="Use float data type for numbers (otherwise number type is used)",

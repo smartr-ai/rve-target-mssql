@@ -31,8 +31,10 @@ class mssqlSink(SQLSink):
         connector: SQLConnector | None = None,
     ) -> None:
         super().__init__(target, stream_name, schema, key_properties)
+        self.stream_name_core = self.stream_name
         if self._config.get("table_prefix"):
-            self.stream_name = self._config.get("table_prefix") + stream_name
+            self.prefix = self._config.get("table_prefix")
+            self.stream_name = self.prefix + stream_name
 
     # Copied purely to help with type hints
     @property
@@ -306,3 +308,10 @@ class mssqlSink(SQLSink):
         name = self.snakecase(name)
         # replace leading digit
         return replace_leading_digit(name)
+
+    def clean_up(self) -> None:
+        if self._config.get("swap_and_truncate"):
+            self.logger.info(
+                f"Doing the ol' table switcheroo on stream '{self.stream_name}'..."
+            )
+            self._connector.swap_and_truncate(self.stream_name_core, self.prefix)
